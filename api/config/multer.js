@@ -1,8 +1,11 @@
-const { join } = require('path');
+const { join } = require('path')
 const multer = require('multer')
-
+const fs = require('fs')
 const setupMulter = () => {
   const fileUploadFolder = join(__dirname, '../../uploads')
+  if(!fs.existsSync(fileUploadFolder)){
+    fs.mkdirSync(fileUploadFolder)
+  }
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, fileUploadFolder)

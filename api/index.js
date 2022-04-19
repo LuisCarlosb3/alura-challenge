@@ -1,17 +1,12 @@
-const express = require('express')
-const cors = require('cors')
-const { setupMulter } = require('./config/multer')
-const createTransactionsFromCsv = require('./src/controllers/createTransactionsFromCsv')
+const app = require("./config/server")
+const mongoClient = require('./src/repository-util/mongodb-setup')
+const env = require('./config/env')
 
-upload = setupMulter()
-
-const app = express()
-app.use(express.json())
-app.use(cors())
-
-app.post('/history', upload.single('history'), createTransactionsFromCsv())
-
-
-app.listen(3000, () => {
-  console.log('listening on port 3000')
+mongoClient.connect(env.mongoUrl).then(()=>{
+  console.log('MONGODB:: ready')
+  app.listen(3000, () => {
+    console.log('listening on port 3000')
+  })
+}).catch((err )=>{
+  console.error('MONGODB:: '+err.message)
 })
