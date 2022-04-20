@@ -3,7 +3,7 @@ const multer = require('multer')
 const fs = require('fs')
 const setupMulter = () => {
   const fileUploadFolder = join(__dirname, '../../uploads')
-  if(!fs.existsSync(fileUploadFolder)){
+  if (!fs.existsSync(fileUploadFolder)) {
     fs.mkdirSync(fileUploadFolder)
   }
   const storage = multer.diskStorage({
@@ -17,14 +17,14 @@ const setupMulter = () => {
     }
   })
   const fileFilter = function (file, cb) {
-    const filetypes = /csv/;
+    const filetypes = /csv/
     const extname = filetypes.test(file.originalname);
     const mimetype = filetypes.test(file.mimetype);
 
     if (mimetype && extname) {
-      return cb(null, true);
+      return cb(null, true)
     } else {
-      cb('Error: Only CSV file allowed!');
+      cb(new Error('Error: Only CSV file allowed!'))
     }
   }
 
@@ -32,7 +32,7 @@ const setupMulter = () => {
     dest: fileUploadFolder,
     storage: storage,
     fileFilter: function (_req, file, cb) {
-      fileFilter(file, cb);
+      fileFilter(file, cb)
     }
   })
 

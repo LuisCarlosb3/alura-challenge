@@ -3,7 +3,7 @@ const cors = require('cors')
 const { setupMulter } = require('./multer')
 const createTransactionsFromCsv = require('../src/modules/transactions/controllers/createTransactionsFromCsv')
 
-upload = setupMulter()
+const upload = setupMulter()
 
 const app = express()
 app.use(express.json())
