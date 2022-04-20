@@ -8,5 +8,5 @@ module.exports = {
   coverageProvider: 'v8',
   testEnvironment: 'node',
   preset: '@shelf/jest-mongodb',
-  watchPathIgnorePatterns: ['<rootDir>/\\.csv/']
+  modulePathIgnorePatterns: ['<rootDir>/\\.csv']
 }
