@@ -1,8 +1,26 @@
 const { createReadStream, unlinkSync } = require('fs')
 const { parse } = require('csv-parse')
 
-module.exports = function createTransactionsFromCsv (createTransactionRepository, checkIfTransactionExistsByDateRepository) {
-  async function loadRegisters (file) {
+module.exports = function createTransactionsFromCsv (transactionRepository) {
+  async function checkFirstLine (file) {
+    return new Promise((resolve, reject) => {
+      const stream = createReadStream(file)
+      const parseFile = parse()
+      stream.pipe(parseFile)
+      parseFile.on('data', async line => {
+        const transaction = transactionParse(line)
+        const allFieldsOk = checkIfAreEmptyFields(transaction)
+        if (allFieldsOk) {
+          resolve(transaction)
+        }
+      }).on('end', () => {
+        resolve(null)
+      }).on('error', (err) => {
+        reject(err)
+      })
+    })
+  }
+  async function loadRegisters (file, baseDate) {
     return new Promise((resolve, reject) => {
       const registers = []
       const stream = createReadStream(file)
@@ -10,33 +28,17 @@ module.exports = function createTransactionsFromCsv (createTransactionRepository
       stream.pipe(parseFile)
       parseFile.on('data', async line => {
         const transaction = transactionParse(line)
-        if (registers[0]) {
-          const isSameDate = checkIfIsSameDate(registers[0].date, transaction)
-          const allFieldsOk = checkIfAreEmptyFields(transaction)
-          if (!isSameDate || !allFieldsOk) {
-            return
-          }
-        }
-        if (!registers[0]) {
-          const exists = await checkIfTransactionExistsByDateRepository(transaction.date)
-          if (exists) {
-            const emptyErr = new Error('Already exists transactions for ' + transaction.date.toISOString())
-            emptyErr.name = 'transactionAlreadyExists'
-            reject(emptyErr)
-          }
+        const allFieldsOk = checkIfAreEmptyFields(transaction)
+        const isSameDate = checkIfIsSameDate(baseDate, transaction)
+
+        if (!allFieldsOk || !isSameDate) {
+          return
         }
 
         registers.push(transaction)
       }).on('end', () => {
-        if (registers.length === 0) {
-          const emptyErr = new Error('File is empty')
-          emptyErr.name = 'emptyFile'
-          reject(emptyErr)
-        }
-        unlinkSync(file)
         resolve(registers)
       }).on('error', (err) => {
-        unlinkSync(file)
         reject(err)
       })
     })
@@ -55,7 +57,11 @@ module.exports = function createTransactionsFromCsv (createTransactionRepository
     return transaction
   }
   function checkIfIsSameDate (baseDate, newTransaction) {
-    return (newTransaction.date === baseDate)
+    const base = new Date(baseDate)
+    const newDate = new Date(newTransaction.date)
+    base.setHours(0, 0, 0, 0)
+    newDate.setHours(0, 0, 0, 0)
+    return (base.getTime() === newDate.getTime())
   }
   function checkIfAreEmptyFields (transaction) {
     for (const key in transaction) {
@@ -66,7 +72,20 @@ module.exports = function createTransactionsFromCsv (createTransactionRepository
     return true
   }
   return async ({ filePath }) => {
-    const transactions = await loadRegisters(filePath)
-    createTransactionRepository(transactions)
+    const firstTransaction = await checkFirstLine(filePath)
+    if (!firstTransaction) {
+      const emptyErr = new Error('File is empty')
+      emptyErr.name = 'emptyFile'
+      throw emptyErr
+    }
+    const exists = await transactionRepository.checkIfTransactionExistsByDate({ transactionDate: firstTransaction.date })
+    if (exists) {
+      const emptyErr = new Error('Already exists transactions for ' + firstTransaction.date.toISOString())
+      emptyErr.name = 'transactionAlreadyExists'
+      throw emptyErr
+    }
+    const transactions = await loadRegisters(filePath, firstTransaction.date)
+    transactionRepository.createTransactionsInBatch({ transactions })
+    unlinkSync(filePath)
   }
 }

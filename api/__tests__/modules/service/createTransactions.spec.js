@@ -5,10 +5,12 @@ const { copyFileSync, existsSync } = require('fs')
 const FIXTURE_PATH = '../../fixtures/csv_files/'
 const UPLOAD_PATH = '../../../../uploads/'
 const makeSut = () => {
-  const createTransactionRepository = jest.fn()
-  const checkIfTransactionExistsByDateRepository = jest.fn(() => false)
-  const service = createTransactionsFromCsv(createTransactionRepository, checkIfTransactionExistsByDateRepository)
-  return { service, createTransactionRepository, checkIfTransactionExistsByDateRepository }
+  const transactionRepository = {
+    checkIfTransactionExistsByDate: jest.fn(),
+    createTransactionsInBatch: jest.fn()
+  }
+  const service = createTransactionsFromCsv(transactionRepository)
+  return { service, transactionRepository }
 }
 const validTransactions = [
   {
@@ -31,16 +33,16 @@ function resolveAndCopy (file) {
 
 describe('Create Transaction From CSV service', () => {
   it('ensure service only call repository with transactions for same date as first', async () => {
-    const { service, createTransactionRepository } = makeSut()
+    const { service, transactionRepository } = makeSut()
     const uploadPath = resolveAndCopy('one-different-day.csv')
     await service({ filePath: uploadPath })
-    expect(createTransactionRepository).toHaveBeenCalledWith(validTransactions)
+    expect(transactionRepository.createTransactionsInBatch).toHaveBeenCalledWith({ transactions: validTransactions })
   })
   it('ensure service only call repository with transactions with all fields', async () => {
-    const { service, createTransactionRepository } = makeSut()
+    const { service, transactionRepository } = makeSut()
     const uploadPath = resolveAndCopy('invalid-field.csv')
     await service({ filePath: uploadPath })
-    expect(createTransactionRepository).toHaveBeenCalledWith(validTransactions)
+    expect(transactionRepository.createTransactionsInBatch).toHaveBeenCalledWith({ transactions: validTransactions })
   })
   it('ensure service throws an error if file is empty', async () => {
     const { service } = makeSut()
@@ -49,15 +51,15 @@ describe('Create Transaction From CSV service', () => {
     await expect(promise).rejects.toThrow()
   })
   it('ensure service call checkIfTransactionExistsByDateRepository with first transaction date', async () => {
-    const { service, checkIfTransactionExistsByDateRepository } = makeSut()
+    const { service, transactionRepository } = makeSut()
     const uploadPath = resolveAndCopy('ok-file.csv')
     await service({ filePath: uploadPath })
-    expect(checkIfTransactionExistsByDateRepository).toHaveBeenCalledWith(validTransactions[0].date)
+    expect(transactionRepository.checkIfTransactionExistsByDate).toHaveBeenCalledWith({ transactionDate: validTransactions[0].date })
   })
   it('ensure service throws if checkIfTransactionExistsByDateRepository returns true', async () => {
-    const { service, checkIfTransactionExistsByDateRepository } = makeSut()
+    const { service, transactionRepository } = makeSut()
     const uploadPath = resolveAndCopy('ok-file.csv')
-    checkIfTransactionExistsByDateRepository.mockReturnValueOnce(true)
+    transactionRepository.checkIfTransactionExistsByDate.mockReturnValueOnce(true)
     const promise = service({ filePath: uploadPath })
     await expect(promise).rejects.toThrow()
   })
