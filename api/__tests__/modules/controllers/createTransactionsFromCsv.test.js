@@ -31,7 +31,7 @@ describe('Create Transactions From CSV', () => {
   afterAll(async () => {
     await mongoHelper.disconnect()
   })
-  it.only('ensure create transactions returns 200 if files ok', async () => {
+  it('ensure create transactions returns 200 if files ok', async () => {
     const csvFile = path.resolve(__dirname, FIXTURE_PATH, 'ok-file.csv')
     const response = await request(app).post('/history').attach('history', csvFile)
     expect(response.status).toBe(200)
@@ -41,7 +41,7 @@ describe('Create Transactions From CSV', () => {
     await collection.insertOne(transactions[0])
     const csvFile = path.resolve(__dirname, FIXTURE_PATH, 'ok-file.csv')
     const response = await request(app).post('/history').attach('history', csvFile)
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(400)
   })
 
   it('ensure should return 400 if file is empty', async () => {

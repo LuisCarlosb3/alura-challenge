@@ -87,5 +87,6 @@ module.exports = function createTransactionsFromCsv (transactionRepository) {
     const transactions = await loadRegisters(filePath, firstTransaction.date)
     transactionRepository.createTransactionsInBatch({ transactions })
     unlinkSync(filePath)
+    return transactions
   }
 }
