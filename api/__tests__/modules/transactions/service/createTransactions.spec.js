@@ -1,9 +1,9 @@
 const { describe, expect, it } = require('@jest/globals')
-const createTransactionsFromCsv = require('../../../src/modules/transactions/service/createTransactionsFromCsv.service')
+const createTransactionsFromCsv = require('../../../../src/modules/transactions/service/createTransactionsFromCsv.service')
 const path = require('path')
 const { copyFileSync, existsSync } = require('fs')
-const FIXTURE_PATH = '../../fixtures/csv_files/'
-const UPLOAD_PATH = '../../../../uploads/'
+const FIXTURE_PATH = '../../../fixtures/csv_files/'
+const UPLOAD_PATH = '../../../../../uploads/'
 const makeSut = () => {
   const transactionRepository = {
     checkIfTransactionExistsByDate: jest.fn(),

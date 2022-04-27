@@ -1,8 +1,8 @@
 const { describe, expect, it, beforeAll, afterAll, beforeEach } = require('@jest/globals')
 
-const transactionRepository = require('../../../src/modules/transactions/repository/transactionRepository')
-const mongoHelper = require('../../../src/repository-util/mongodb-setup')
-const env = require('../../../config/env')
+const transactionRepository = require('../../../../src/modules/transactions/repository/transactionRepository')
+const mongoHelper = require('../../../../src/repository-util/mongodb-setup')
+const env = require('../../../../config/env')
 const transactions = [
   {
     bankOrigin: 'BANCO DO BRASIL',

@@ -2,9 +2,9 @@ const { describe, expect, it } = require('@jest/globals')
 const request = require('supertest')
 const path = require('path')
 
-const app = require('../../../config/server')
-const mongoHelper = require('../../../src/repository-util/mongodb-setup')
-const env = require('../../../config/env')
+const app = require('../../../../config/server')
+const mongoHelper = require('../../../../src/repository-util/mongodb-setup')
+const env = require('../../../../config/env')
 const FIXTURE_PATH = '../../fixtures/csv_files/'
 
 const transactions = [

@@ -6,5 +6,5 @@ module.exports = {
     const collection = await mongoDb.getCollection(this.collection)
     const response = await collection.insertOne(importData)
     return response.insertedId
-  },
+  }
 }
