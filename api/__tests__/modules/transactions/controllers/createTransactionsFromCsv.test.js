@@ -5,7 +5,7 @@ const path = require('path')
 const app = require('../../../../config/server')
 const mongoHelper = require('../../../../src/repository-util/mongodb-setup')
 const env = require('../../../../config/env')
-const FIXTURE_PATH = '../../fixtures/csv_files/'
+const FIXTURE_PATH = '../../../fixtures/csv_files/'
 
 const transactions = [
   {
